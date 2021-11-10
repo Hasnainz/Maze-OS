@@ -17,7 +17,7 @@ int 0x10
 mov bx, the_secret ; Move the same offset of the 'the_secret' data from the start of the binary file into bx 
 add bx, 0x7c00 ; Add the memory location where the binary file starts in memory so now we have where 'the_secret' lies in
                ; memory
-mov al, [bx] ; Move the value of bx into al 
+mov al, [bx] ; Moves the value of the memory address contained in bx into al
 int 0x10
 
 mov al, [0x7c2a] ; Precalculating where X will be in memory by examining the binary code. Each byte (2 digits)
