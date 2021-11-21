@@ -1,4 +1,4 @@
-; Global Descripter Table
+; Global Descripter Table which allows us to access our 32-bit of memory
 
 gdt_start: 
   ; The GDT starts with a null 8-byte
