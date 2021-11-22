@@ -14,6 +14,10 @@ call print_nl
 
 call load_kernel ; Load kernel
 
+mov ah, 0x00
+mov al, 13h
+int 0x10
+
 call switch_to_pm ; switch to protected mode, we won't return
 
 jmp $ ; Shouldn't executre
@@ -29,13 +33,16 @@ jmp $ ; Shouldn't executre
 ; load kernel
 
 load_kernel:
+
   mov bx, MSG_LOAD_KERNEL
   call print_string
-  call print_nl
+  ; call print_nl
 
   mov bx, KERNEL_OFFSET
   mov dh, 15 ; We load the first 15 sectors (excluding the boot sector) from 
   mov dl, [BOOT_DRIVE]; the boot disk (out kernel code) to address KERNEL_OFFSET
+  
+
   call disk_load
 
   ret
@@ -55,6 +62,7 @@ BOOT_DRIVE db 0
 MSG_REAL_MODE db "Started in 16-bit Real Mode", 0
 MSG_PROT_MODE db "Successfully landed in 32-bit Protected Mode", 0
 MSG_LOAD_KERNEL db "Loading kernel into memory.", 0
+MSG_TEST DB "TEST", 0
 
 times 510-($-$$) db 0
 dw 0xaa55

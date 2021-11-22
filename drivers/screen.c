@@ -24,7 +24,7 @@ void kprint_at(char *message, int col, int row){
   }
   int i = 0;
   while(message[i] != 0){
-    offset = print_char(message[i++], col, row, WHITE_ON_BLACK);
+    offset = print_char(message[i++], col, row, BLACK_ON_WHITE);
     //Get the row and column for the next iteration
     row = get_offset_row(offset);
     col = get_offset_col(offset);

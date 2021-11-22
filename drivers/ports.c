@@ -6,8 +6,7 @@
  * mov dx, 0x3f2 ; must use dx to store the port address
  * in al, dx ; reading the contents of the port DOR to al
  * or al, 00001000b ; switch on the motor bit
- * out dx, al ; update the DOR of the device
- *
+ * out dx, al 
  */
 
 unsigned char port_byte_in(unsigned short port) {
