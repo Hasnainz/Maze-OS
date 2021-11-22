@@ -1,10 +1,8 @@
-void dummy_test_entrypoint() {
-
-}
+#include "../drivers/screen.h"
 
 void main() {
-  //Create pointer to a char and point it to the first text cell of the video memory
-  char* video_memory = (char*) 0xb8000;
-  //At the address pointed to by video_memory, store the character 'X'
-  *video_memory = 'H';
+  clear_screen();
+  kprint_at("Don't you wish you could write to the screen like me?", 0, 0);
+  clear_screen();
+  kprint_at("Cat's go meow", 0, 0);
 }
