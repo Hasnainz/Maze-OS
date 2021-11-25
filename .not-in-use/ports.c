@@ -1,4 +1,3 @@
-#include "ports.h"
 /* How we read and write to our I/O address spaces
  * we use specific control registers - e.g. the floppy
  * disk controller has its DOR register mapped to IO
