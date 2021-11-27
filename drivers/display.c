@@ -6,7 +6,8 @@ void pixel(int pos_x, int pos_y, unsigned char VGA_Colour){
   vid[(pos_y << 8) + (pos_y << 6) + pos_x] = VGA_Colour;
 }
 
-void clear_screen(unsigned char colour){
+
+void fill_screen(unsigned char colour){
   int i, j;
   for(i = 0; i < WIDTH; i++)
     for(j = 0; j < HEIGHT; j++)
@@ -20,7 +21,7 @@ void clear_screen(unsigned char colour){
 //3 = robot
 //4 = exit
 
-void draw_maze(int maze[WIDTH][HEIGHT]){
+void draw_maze(u8 maze[WIDTH][HEIGHT]){
   int i, j;
   for(i = 0; i < WIDTH; ++i){
     for(j = 0; j < HEIGHT; ++j){
@@ -39,6 +40,8 @@ void draw_maze(int maze[WIDTH][HEIGHT]){
           break;
         case 4:
           pixel(i, j, EXIT_COLOUR);
+          break;
+        default:
           break;
       }
     }

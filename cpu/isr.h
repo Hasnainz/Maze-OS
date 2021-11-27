@@ -3,8 +3,7 @@
 
 #include "types.h"
 
-//Reserved interrupts that are defined in the .asm file
-
+/* ISRs reserved for CPU exceptions */
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -37,7 +36,7 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-
+/* IRQ definitions */
 extern void irq0();
 extern void irq1();
 extern void irq2();
@@ -72,13 +71,13 @@ extern void irq15();
 #define IRQ14 46
 #define IRQ15 47
 
-
+/* Struct which aggregates many registers */
 typedef struct {
-  u32 ds; //Data segment
-  u32 edi, esi, ebp, ebx, edx, ecx, eax; //pusha places all these onto the stack
-  u32 int_no, err_code; //Interrupt number and error code
-  u32 eip, cs, eflags, useresp, ss; // Pushed by the processor
-} registers_t; 
+   u32 ds; /* Data segment selector */
+   u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; /* Pushed by pusha. */
+   u32 int_no, err_code; /* Interrupt number and error code (if applicable) */
+   u32 eip, cs, eflags, useresp, ss; /* Pushed by the processor automatically */
+} registers_t;
 
 void isr_install();
 void isr_handler(registers_t r);
@@ -87,4 +86,3 @@ typedef void (*isr_t)(registers_t);
 void register_interrupt_handler(u8 n, isr_t handler);
 
 #endif
-
