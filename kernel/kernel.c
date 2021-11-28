@@ -4,12 +4,15 @@
 #include "../drivers/display.h"
 #include "../cpu/types.h"
 #include "maze.h"
+#include "util.h"
 #include "kernel.h"
+
+
 
 void init() {
   isr_install();
   asm volatile("sti");
-  init_timer(4000);
+  init_timer(2500);
   init_keyboard();
 }
 
@@ -19,14 +22,21 @@ void s_button(){
 }
 
 void m_button(){
-  u8 maze[WIDTH][HEIGHT];
-  generate_maze(maze);
-  fill_screen(0x0e);
 }
 
 void main() {
   init();
-  m_button();
-}
+  u8 maze[WIDTH][HEIGHT];
 
+  generate_maze(maze);
+  draw_maze(maze);
+
+  solve_maze(maze);
+  draw_maze(maze);
+
+  sleep(1000);
+
+  solve_maze(maze);
+  draw_maze(maze);
+}
 

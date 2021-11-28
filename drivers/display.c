@@ -1,4 +1,5 @@
 #include "display.h"
+#include "../kernel/maze.h"
 
 unsigned char *vid = (unsigned char *) 0xa0000;
 

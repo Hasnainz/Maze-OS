@@ -2,20 +2,18 @@
 #define DISPLAY
 
 #include "../cpu/types.h"
-
-#define WIDTH 320
-#define HEIGHT 200
+#include "../kernel/maze.h"
 
 //0 = wall
 //1 = been before
 //2 = passage
 //3 = robot
 //4 = exit
-#define WALL_COLOUR 0x09
-#define BEEN_BEFORE_COLOUR 0x0b
-#define PASSAGE_COLOUR 0x03
-#define ROBOT_COLOUR 0x4c
-#define EXIT_COLOUR 0x41
+#define WALL_COLOUR 0x40
+#define BEEN_BEFORE_COLOUR 0x0e
+#define PASSAGE_COLOUR 0x42
+#define ROBOT_COLOUR 0x0b
+#define EXIT_COLOUR 0x44
 
 void draw_maze(u8 maze[WIDTH][HEIGHT]);
 void fill_screen(unsigned char colour);
