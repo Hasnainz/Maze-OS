@@ -14,6 +14,7 @@
 #define PASSAGE_COLOUR 0x42
 #define ROBOT_COLOUR 0x0b
 #define EXIT_COLOUR 0x44
+#define ERROR_COLOUR 0x28
 
 void draw_maze(u8 maze[WIDTH][HEIGHT]);
 void fill_screen(unsigned char colour);

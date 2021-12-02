@@ -43,6 +43,7 @@ void draw_maze(u8 maze[WIDTH][HEIGHT]){
           pixel(i, j, EXIT_COLOUR);
           break;
         default:
+          pixel(i, j, ERROR_COLOUR);
           break;
       }
     }

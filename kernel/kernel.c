@@ -12,7 +12,7 @@
 void init() {
   isr_install();
   asm volatile("sti");
-  init_timer(2500);
+  init_timer(10000);
   init_keyboard();
 }
 
@@ -34,6 +34,7 @@ void main() {
   solve_maze(maze);
   draw_maze(maze);
 
+  fill_screen(0x0d);
   sleep(1000);
 
   solve_maze(maze);

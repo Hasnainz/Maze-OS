@@ -17,6 +17,7 @@ typedef struct {
 #define PASSAGE 2
 #define ROBOT 3
 #define EXIT 4
+#define ERROR 5
 
 int contains(pos pos_walls[], int index, int x, int y){
   int i = 0;
@@ -32,7 +33,7 @@ int contains(pos pos_walls[], int index, int x, int y){
 //The tile can be a possible candidate of being primmed if it is in the bounds,
 //if it is a wall and if it is not already in the list.
 int legal(int x, int y){
-  if(x > 0 && x < WIDTH && y > 0 && y < HEIGHT){
+  if(x > 0 && x < WIDTH-1 && y > 0 && y < HEIGHT-1){
     return 1;  
   }
   return 0;
@@ -91,7 +92,7 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
   pos pos_walls[1000];
   int index = 0;
   index = add_walls(maze, pos_walls, index, i, j);
-
+  draw_maze(maze);
   while(index > 0){
     //Pick a random cell from the list of frontier cells
     pos w = pos_walls[rand_int(index)];
@@ -102,19 +103,24 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
       k = rand_int(4);
       if(legal(neighbours[k].x, neighbours[k].y)){
         if(maze[neighbours[k].x][neighbours[k].y] == PASSAGE){
-          maze[(w.x+neighbours[k].x) >> 1][(w.y+neighbours[k].y) >> 1] = 2;
+          maze[(w.x+neighbours[k].x) >> 1][(w.y+neighbours[k].y) >> 1] = PASSAGE;
           maze[w.x][w.y] = PASSAGE;
-          index = add_walls(maze, pos_walls, index, w.x, w.y);
-          index = remove_wall(pos_walls, index, w);
-          break;
-        }
-      }
-      draw_maze(maze);
-    }while(1);
-  }
-  //Set the start and end tiles:
+          pixel((w.x+neighbours[k].x) >> 1, (w.y+neighbours[k].y) >> 1, PASSAGE_COLOUR);
+          pixel(w.x, w.y, PASSAGE_COLOUR);
+          index = add_walls(maze, pos_walls, index, w.x, w.y); 
+          index = remove_wall(pos_walls, index, w); 
+          sleep(4);
+          break; 
+        } 
+      } 
+    }while(1); 
+  } 
+  //Set the start tile
   maze[1][1] = ROBOT;
-  maze[WIDTH-1][HEIGHT-1] = EXIT;
+  pixel(1, 1, ROBOT_COLOUR);
+  
+  maze[WIDTH-3][HEIGHT-3] = EXIT;
+  pixel(WIDTH-3, HEIGHT-3, EXIT);
 }
 
 
@@ -128,7 +134,7 @@ void reset_solve(u8 maze[WIDTH][HEIGHT]){
     }
   }
   maze[1][1] = ROBOT;
-  maze[WIDTH-1][HEIGHT-1] = EXIT;
+  maze[WIDTH-3][HEIGHT-3] = EXIT;
 }
 
 #define UP 0
@@ -176,9 +182,9 @@ u8 look(u8 maze[WIDTH][HEIGHT], pos robot, u8 dir){
 }
 
 u8 count_env(u8 maze[WIDTH][HEIGHT], pos robot, u8 type){
-  int i;
+  u8 i;
   int c = 0;
-  for(i = UP; i < LEFT; i++){
+  for(i = UP; i <= LEFT; i++){
     if(look(maze, robot, i) == type){
       c += 1;
     }
@@ -186,9 +192,10 @@ u8 count_env(u8 maze[WIDTH][HEIGHT], pos robot, u8 type){
   return c;
 }
 
+
 u8 deadend(u8 maze[WIDTH][HEIGHT], pos robot){
-  int i;
-  for(i = UP; i < LEFT; i++){
+  u8 i;
+  for(i = UP; i <= LEFT; i++){
     if(look(maze, robot, i) != WALL){
       return i;
     }
@@ -196,57 +203,91 @@ u8 deadend(u8 maze[WIDTH][HEIGHT], pos robot){
   return -1;
 }
 
-u8 corridor(u8 maze[WIDTH][HEIGHT], pos robot){
-  int i;
-  for(i = UP; i < LEFT; i++){
-    if(look(maze, robot, i) != WALL && i != DOWN){
-      return i;
-    }
+u8 corridor(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading){
+  if(look(maze, robot, current_heading) != WALL){
+    return current_heading;
+  }
+  else if(look(maze, robot, (current_heading+1)%4) != WALL){
+    return (current_heading+1)%4;
+  }
+  else{
+    return (current_heading+3)%4;
   }
 }
 
-u8 junction(u8 maze[WIDTH][HEIGHT], pos robot){
-  u8 passages = count_env(maze, robot, PASSAGE);
-
-  int i;
-  for(i = UP; i < LEFT; i++){
-    if(look(maze, robot, i) != WALL && i != DOWN){
-      return i;
-    }
-  }
+u8 pop(u8 stack[], u16 *stack_top){
+  (*stack_top)--;
+  return stack[*stack_top];
 }
 
-u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot){
+void push(u8 val, u8 stack[], u16 *stack_top){
+  stack[*stack_top] = val;
+  (*stack_top)++;
+}
+
+u8 junction(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], u16 *exp_st_top,
+            u8 current_heading){
+
+  if (count_env(maze, robot, BEEN_BEFORE) <= 1) {
+    push(current_heading, explore_stack, exp_st_top);
+  }
+  
+  if(count_env(maze, robot, PASSAGE) > 0){
+    while(1){
+      u8 rand = (u8)rand_int(4);
+      if(look(maze, robot, rand) == PASSAGE){
+        return rand;
+      }
+    }
+  }
+
+  return (pop(explore_stack, exp_st_top)+2)%4;
+}
+
+u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], 
+                   u16 *exp_st_top, u8 current_heading){
   int exits = 4 - count_env(maze, robot, WALL);
   switch(exits) {
     case 0:
     case 1:
       return deadend(maze, robot);
     case 2:
-      return corridor(maze, robot);
+      return corridor(maze, robot, current_heading);
     case 3:
     case 4:
-      return junction(maze, robot);
+      return junction(maze, robot, explore_stack, exp_st_top, current_heading);
     default:
       return -1;
   }
 }
 
-u8 solve_stack[1000];
 u8 solved = 0;
 
 void solve_maze(u8 maze[WIDTH][HEIGHT]) {
-  u8 explore_stack[1000];
-  if(solved == 1){
-    reset_solve(maze);
-    return;
-  }
+  u8 explore_stack[3000];
+
+  u16 exp_st_top = 0;
+
+  u8 current_heading = UP;
   pos robot = {1, 1};
-  while(robot.x != WIDTH-1 && robot.y != HEIGHT-1){
-    u8 direction = explore_control(maze, robot);
+
+//  if(solved == 1){
+//    reset_solve(maze);
+//    u16 stk_top = solved_stack_top;
+//    while(robot.x != WIDTH-1 && robot.y != HEIGHT-1){
+//      u8 direction = pop(solved_stack, &stk_top);
+//      robot = move(maze, direction, robot);
+//      draw_maze(maze);
+//      sleep(200);
+//    }
+//    //Run the saved maze path
+//    return;
+//  }
+  while(robot.x != WIDTH-3 || robot.y != HEIGHT-3){
+    u8 direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
+    current_heading = direction;
     robot = move(maze, direction, robot);
     draw_maze(maze);
-    sleep(200);
   }
   solved = 1;
 }
