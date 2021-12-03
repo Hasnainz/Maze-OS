@@ -6,6 +6,18 @@
 #include "kernel.h"
 #include "util.h"
 
+u16 sleep_time = 0;
+
+void sleep_time_add(){
+  if(sleep_time == 2500)
+    return;
+  sleep_time += 100;
+}
+void sleep_time_subtract(){
+  if(sleep_time == 0)
+    return;
+  sleep_time -= 100;
+}
 
 typedef struct {
     int x;
@@ -109,7 +121,10 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
           pixel(w.x, w.y, PASSAGE_COLOUR);
           index = add_walls(maze, pos_walls, index, w.x, w.y); 
           index = remove_wall(pos_walls, index, w); 
-          sleep(4);
+          if(sleep_time <= 0)
+            sleep(5);
+          else
+            sleep(sleep_time/10);
           break; 
         } 
       } 
@@ -264,6 +279,7 @@ u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[],
 u8 solved = 0;
 
 void solve_maze(u8 maze[WIDTH][HEIGHT]) {
+  sleep_time += 100;
   u8 explore_stack[3000];
 
   u16 exp_st_top = 0;
@@ -287,7 +303,12 @@ void solve_maze(u8 maze[WIDTH][HEIGHT]) {
     u8 direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
     current_heading = direction;
     robot = move(maze, direction, robot);
+    if(sleep_time == 0){
+      continue;
+    }
     draw_maze(maze);
+    sleep(sleep_time/5);
   }
+  draw_maze(maze);
   solved = 1;
 }

@@ -6,6 +6,8 @@
 
 #include "../cpu/types.h"
 
+void sleep_time_add();
+void sleep_time_subtract();
 void generate_maze();
 void solve_maze();
 

@@ -8,20 +8,11 @@
 #include "kernel.h"
 
 
-
 void init() {
   isr_install();
   asm volatile("sti");
   init_timer(10000);
   init_keyboard();
-}
-
-//The keyboard handler sends its interrupt handlers here.
-void s_button(){
-  fill_screen(0x0d);
-}
-
-void m_button(){
 }
 
 void main() {
@@ -34,10 +25,5 @@ void main() {
   solve_maze(maze);
   draw_maze(maze);
 
-  fill_screen(0x0d);
-  sleep(1000);
-
-  solve_maze(maze);
-  draw_maze(maze);
 }
 
