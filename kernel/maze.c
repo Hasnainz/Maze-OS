@@ -6,7 +6,7 @@
 #include "kernel.h"
 #include "util.h"
 
-u16 sleep_time = 0;
+u16 sleep_time = 100;
 
 void sleep_time_add(){
   if(sleep_time == 2500)
@@ -23,6 +23,11 @@ typedef struct {
     int x;
     int y;
 } pos;
+
+typedef struct {
+    u8 in_dir;
+    u8 out_dir;
+} dir;
 
 #define WALL 0
 #define BEEN_BEFORE 1
@@ -121,10 +126,8 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
           pixel(w.x, w.y, PASSAGE_COLOUR);
           index = add_walls(maze, pos_walls, index, w.x, w.y); 
           index = remove_wall(pos_walls, index, w); 
-          if(sleep_time <= 0)
-            sleep(5);
-          else
-            sleep(sleep_time/10);
+          if(sleep_time > 0)
+            sleep(sleep_time/50);
           break; 
         } 
       } 
@@ -240,6 +243,7 @@ void push(u8 val, u8 stack[], u16 *stack_top){
   (*stack_top)++;
 }
 
+
 u8 junction(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], u16 *exp_st_top,
             u8 current_heading){
 
@@ -255,12 +259,12 @@ u8 junction(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], u16 *exp_st_t
       }
     }
   }
-
   return (pop(explore_stack, exp_st_top)+2)%4;
 }
 
 u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], 
                    u16 *exp_st_top, u8 current_heading){
+  u8 dir;
   int exits = 4 - count_env(maze, robot, WALL);
   switch(exits) {
     case 0:
@@ -277,38 +281,30 @@ u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[],
 }
 
 u8 solved = 0;
+u8 explore_stack[3000];
 
 void solve_maze(u8 maze[WIDTH][HEIGHT]) {
-  sleep_time += 100;
-  u8 explore_stack[3000];
-
   u16 exp_st_top = 0;
+  u16 sol_st_top = 0;
 
   u8 current_heading = UP;
   pos robot = {1, 1};
 
-//  if(solved == 1){
-//    reset_solve(maze);
-//    u16 stk_top = solved_stack_top;
-//    while(robot.x != WIDTH-1 && robot.y != HEIGHT-1){
-//      u8 direction = pop(solved_stack, &stk_top);
-//      robot = move(maze, direction, robot);
-//      draw_maze(maze);
-//      sleep(200);
-//    }
-//    //Run the saved maze path
-//    return;
-//  }
   while(robot.x != WIDTH-3 || robot.y != HEIGHT-3){
-    u8 direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
+    u8 direction;
+
+    direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
+
     current_heading = direction;
     robot = move(maze, direction, robot);
+
     if(sleep_time == 0){
       continue;
     }
     draw_maze(maze);
-    sleep(sleep_time/5);
+    sleep(sleep_time/9);
   }
   draw_maze(maze);
+  sleep(1000);
   solved = 1;
 }

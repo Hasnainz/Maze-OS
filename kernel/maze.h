@@ -10,5 +10,6 @@ void sleep_time_add();
 void sleep_time_subtract();
 void generate_maze();
 void solve_maze();
+void reset_solve(u8 maze[WIDTH][HEIGHT]);
 
 #endif

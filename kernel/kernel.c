@@ -6,6 +6,7 @@
 #include "maze.h"
 #include "util.h"
 #include "kernel.h"
+#include "random.h"
 
 
 void init() {
@@ -13,6 +14,7 @@ void init() {
   asm volatile("sti");
   init_timer(10000);
   init_keyboard();
+  sgenrand(get_ticks());
 }
 
 void main() {
@@ -24,6 +26,17 @@ void main() {
 
   solve_maze(maze);
   draw_maze(maze);
+
+  while(1){
+    sleep(9999);  
+    generate_maze(maze);
+    draw_maze(maze);
+
+    reset_solve(maze);
+    solve_maze(maze);
+
+    draw_maze(maze);
+  }
 
 }
 
