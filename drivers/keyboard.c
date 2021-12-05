@@ -1,7 +1,6 @@
 #include "keyboard.h"
 #include "ports.h"
 #include "../cpu/isr.h"
-#include "screen.h"
 #include "../kernel/random.h"
 #include "../kernel/kernel.h"
 #include "../kernel/maze.h"

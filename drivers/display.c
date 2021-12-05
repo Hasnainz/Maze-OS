@@ -42,6 +42,9 @@ void draw_maze(u8 maze[WIDTH][HEIGHT]){
         case 4:
           pixel(i, j, EXIT_COLOUR);
           break;
+        case 5:
+          pixel(i, j, SOLVED_BACKTRACK_COLOUR);
+          break;
         default:
           pixel(i, j, ERROR_COLOUR);
           break;

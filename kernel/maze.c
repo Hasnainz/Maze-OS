@@ -34,7 +34,8 @@ typedef struct {
 #define PASSAGE 2
 #define ROBOT 3
 #define EXIT 4
-#define ERROR 5
+#define SOLVED_BACKTRACK 5
+#define ERROR 6
 
 int contains(pos pos_walls[], int index, int x, int y){
   int i = 0;
@@ -280,20 +281,85 @@ u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[],
   }
 }
 
+pos solved_move(u8 maze[WIDTH][HEIGHT], u8 dir, pos robot){
+  maze[robot.x][robot.y] = SOLVED_BACKTRACK;
+  pos new = {robot.x, robot.y};
+  switch(dir){
+    case UP:
+      new.y -= 1; 
+      maze[new.x][new.y] = ROBOT;
+      return new;
+    case RIGHT:
+      new.x += 1;
+      maze[new.x][new.y] = ROBOT;
+      return new;
+    case DOWN:
+      new.y += 1;
+      maze[new.x][new.y] = ROBOT;
+      return new;
+    case LEFT:
+      new.x -= 1;
+      maze[new.x][new.y] = ROBOT;
+      return new;
+    default:
+      break;
+  }
+}
 u8 solved = 0;
 u8 explore_stack[3000];
 
+u8 control_backtrack(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading, u16 *exp_st_top){
+  u8 been_before = count_env(maze, robot, BEEN_BEFORE);
+  u8 exits = 4 - count_env(maze, robot, WALL);
+  u8 dir = UP;
+  if(robot.x == WIDTH-3 && robot.y == HEIGHT-3){
+    u8 i;
+    for(i = UP; i <= LEFT; i++){
+      if(look(maze, robot, i) == BEEN_BEFORE)
+        return i;
+    }
+  }
+  else if (exits == 2){
+    if(look(maze, robot, current_heading) != WALL){
+      return current_heading;
+    }
+    else if(look(maze, robot, (current_heading+1)%4) != WALL){
+      return (current_heading+1)%4;
+    }
+    else{
+      return (current_heading+3)%4;
+    }
+  }
+  else{
+    return (pop(explore_stack, exp_st_top)+2)%4;
+  }
+}
+
+
+void trace_root(u8 maze[WIDTH][HEIGHT], u16 *exp_st_top) {
+  pos robot = {WIDTH-3, HEIGHT-3};
+  u8 current_heading = UP;
+
+  while(robot.x != 1 || robot.y != 1){
+    u8 direction = control_backtrack(maze, robot, current_heading, exp_st_top);
+
+    current_heading = direction;
+    robot = solved_move(maze, direction, robot);
+
+    draw_maze(maze);
+    sleep(sleep_time/9);
+  }
+
+}
+
 void solve_maze(u8 maze[WIDTH][HEIGHT]) {
   u16 exp_st_top = 0;
-  u16 sol_st_top = 0;
 
   u8 current_heading = UP;
   pos robot = {1, 1};
 
   while(robot.x != WIDTH-3 || robot.y != HEIGHT-3){
-    u8 direction;
-
-    direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
+    u8 direction = explore_control(maze, robot, explore_stack, &exp_st_top, current_heading);
 
     current_heading = direction;
     robot = move(maze, direction, robot);
@@ -307,4 +373,6 @@ void solve_maze(u8 maze[WIDTH][HEIGHT]) {
   draw_maze(maze);
   sleep(1000);
   solved = 1;
+  trace_root(maze, &exp_st_top);
+  draw_maze(maze);
 }
