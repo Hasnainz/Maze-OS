@@ -1,7 +1,7 @@
 #include "timer.h"
 #include "isr.h"
 #include "types.h"
-
+#include "../drivers/ports.h"
 u32 tick = 0;
 
 void sleep(u32 n){
