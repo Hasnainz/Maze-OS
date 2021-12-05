@@ -4,7 +4,6 @@
 #include "../drivers/display.h"
 #include "../cpu/types.h"
 #include "maze.h"
-#include "util.h"
 #include "kernel.h"
 #include "random.h"
 

@@ -2,10 +2,7 @@
 #define TYPES_H
 
 
-#include "../cpu/types.h"
-
-/* Instead of using 'chars' to allocate non-character bytes,
- * we will use these new type with no semantic meaning */
+// Shortens our code and makes it more readable
 typedef unsigned int   u32;
 typedef          int   s32;
 typedef unsigned short u16;

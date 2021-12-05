@@ -1,6 +1,6 @@
 #include "timer.h"
-#include "../kernel/util.h"
 #include "isr.h"
+#include "types.h"
 
 u32 tick = 0;
 

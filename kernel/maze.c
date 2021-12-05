@@ -4,7 +4,6 @@
 #include "random.h"
 #include "../cpu/types.h"
 #include "kernel.h"
-#include "util.h"
 
 u16 sleep_time = 100;
 
