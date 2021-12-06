@@ -1,13 +1,18 @@
 #include "display.h"
 #include "../kernel/maze.h"
 
+//Where the draw memory location is - notice that it is different to the value
+//in the print.asm file because there we were in text mode but here we are in graphics
+//mode
 unsigned char *vid = (unsigned char *) 0xa0000;
 
+//Draws a pixel on the scren coordinates x,y with the specified colour
 void pixel(int pos_x, int pos_y, unsigned char VGA_Colour){
   vid[(pos_y << 8) + (pos_y << 6) + pos_x] = VGA_Colour;
 }
 
 
+//Just fills the screen with a colour - used for testing and not in use at the moment
 void fill_screen(unsigned char colour){
   int i, j;
   for(i = 0; i < WIDTH; i++)
@@ -53,6 +58,8 @@ void draw_maze(u8 maze[WIDTH][HEIGHT]){
   }
 }
 
+//These functions were used to test drawing to the screen with lines and shapes
+//and are not currently in use
 
 // Bresenhams line drawing algorithm
 void line(int x1, int y1, int x2, int y2, unsigned char colour){

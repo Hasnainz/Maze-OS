@@ -1,4 +1,8 @@
 ; Defined in isr.c
+; interrupt service routines - we need to push information about the processor state
+; onto the stack in order to deal with the interrupt. After this is dealt with, we can
+; return to the original state
+
 [extern isr_handler]
 [extern irq_handler]
 
@@ -51,11 +55,9 @@ irq_common_stub:
     iret 
 	
 ; We don't get information about which interrupt was caller
-; when the handler is run, so we will need to have a different handler
-; for every interrupt.
-; Furthermore, some interrupts push an error code onto the stack but others
-; don't, so we will push a dummy error code for those which don't, so that
-; we have a consistent stack for all of them.
+; when the handler is run, so we will need to have a different handler for every interrupt.
+; some interrupts push an error code onto the stack but others don't, 
+; so we can just push a dummy error code for those which don't, so that
 
 ; First make the ISRs global
 global isr0

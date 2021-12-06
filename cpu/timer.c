@@ -1,3 +1,7 @@
+//We have used the PIT to have a timer in our kernel
+//This allows us to do things at certain intervals which is necessary for
+//making animations when generating and solving our maze. It also allows us
+//to seed our random numbers whenever we need to generate new random numbers
 #include "timer.h"
 #include "isr.h"
 #include "types.h"

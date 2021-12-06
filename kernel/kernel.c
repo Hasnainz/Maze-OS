@@ -7,7 +7,7 @@
 #include "kernel.h"
 #include "random.h"
 
-
+// Inits interrupts, timer, keyboard and seeds the random number generator
 void init() {
   isr_install();
   asm volatile("sti");
@@ -16,6 +16,7 @@ void init() {
   sgenrand(get_ticks());
 }
 
+//The main program
 void main() {
   init();
   u8 maze[WIDTH][HEIGHT];
@@ -25,16 +26,12 @@ void main() {
 
   solve_maze(maze);
   draw_maze(maze);
-
+  // Until the system is shut down, continuously generates and solves random mazes
   while(1){
-    sleep(9999);  
     generate_maze(maze);
-    draw_maze(maze);
-
-    reset_solve(maze);
+    sleep(1000);  
     solve_maze(maze);
-
-    draw_maze(maze);
+    sleep(1000);  
   }
 
 }

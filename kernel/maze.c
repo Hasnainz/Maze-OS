@@ -5,6 +5,15 @@
 #include "../cpu/types.h"
 #include "kernel.h"
 
+//The maze environment rewritten in C. This only generates mazes using prims.
+//This also uses the solution to exercise 2 to solve the maze and then the 
+//same stack to backtrack the solution (method b of the grand finale) because
+//space is important here (because I didn't manage to set up paging). This 
+//doesn't solve mazes with loops which isn't a problem for this environment because
+//prims doesn't create loops. We also don't have issues with the shortest path 
+//because prims should always make perfect mazes.
+
+//Manages the time gap between animations
 u16 sleep_time = 100;
 
 void sleep_time_add(){
@@ -23,11 +32,7 @@ typedef struct {
     int y;
 } pos;
 
-typedef struct {
-    u8 in_dir;
-    u8 out_dir;
-} dir;
-
+//Essentially IRobot.WALL, added error(used for testing) and backtracking values 
 #define WALL 0
 #define BEEN_BEFORE 1
 #define PASSAGE 2
@@ -36,6 +41,7 @@ typedef struct {
 #define SOLVED_BACKTRACK 5
 #define ERROR 6
 
+//Prims start -----------------------------------------------------------------------
 int contains(pos pos_walls[], int index, int x, int y){
   int i = 0;
   while(i < index){
@@ -90,7 +96,7 @@ int remove_wall(pos pos_walls[], int index, pos w){
 }
 
 
-//Uses prims algorithm to make a random Minimum Spanning Tree 
+//Uses prims algorithm to make a random mst
 void generate_maze(u8 maze[WIDTH][HEIGHT]) {
   //Start with a maze of walls
   int i, j, k;
@@ -102,10 +108,10 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
 
   i = 1;
   j = 1;
-  //Pick our tile to start prims from 
+  //Pick our tile to start prims from (I'm using (1,1) for consistancy) 
   maze[i][j] = PASSAGE;
 
-  //Add the possible walls that prims could stretch to
+  //Add the possible walls that prims could stretch to the following array
   pos pos_walls[1000];
   int index = 0;
   index = add_walls(maze, pos_walls, index, i, j);
@@ -122,8 +128,11 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
         if(maze[neighbours[k].x][neighbours[k].y] == PASSAGE){
           maze[(w.x+neighbours[k].x) >> 1][(w.y+neighbours[k].y) >> 1] = PASSAGE;
           maze[w.x][w.y] = PASSAGE;
+
+          //Draw the pixels directly for speed instead of regenerating the entire maze
           pixel((w.x+neighbours[k].x) >> 1, (w.y+neighbours[k].y) >> 1, PASSAGE_COLOUR);
           pixel(w.x, w.y, PASSAGE_COLOUR);
+
           index = add_walls(maze, pos_walls, index, w.x, w.y); 
           index = remove_wall(pos_walls, index, w); 
           if(sleep_time > 0)
@@ -136,12 +145,13 @@ void generate_maze(u8 maze[WIDTH][HEIGHT]) {
   //Set the start tile
   maze[1][1] = ROBOT;
   pixel(1, 1, ROBOT_COLOUR);
-  
+  //Set the target tile 
   maze[WIDTH-3][HEIGHT-3] = EXIT;
   pixel(WIDTH-3, HEIGHT-3, EXIT);
 }
+//prims end ----------------------------------------------------------------------------
 
-
+//Sets the maze back to its starting state (for testing purposes)
 void reset_solve(u8 maze[WIDTH][HEIGHT]){
   int i, j;
   for(i = 0; i < WIDTH; i++){
@@ -160,6 +170,7 @@ void reset_solve(u8 maze[WIDTH][HEIGHT]){
 #define DOWN 2
 #define LEFT 3
 
+//Moves the robot in a cardinal direction
 pos move(u8 maze[WIDTH][HEIGHT], u8 dir, pos robot){
   maze[robot.x][robot.y] = BEEN_BEFORE;
   pos new = {robot.x, robot.y};
@@ -184,6 +195,7 @@ pos move(u8 maze[WIDTH][HEIGHT], u8 dir, pos robot){
       break;
   }
 }
+//Sees what environment are in what direction
 u8 look(u8 maze[WIDTH][HEIGHT], pos robot, u8 dir){
   switch(dir){
     case UP:
@@ -199,6 +211,7 @@ u8 look(u8 maze[WIDTH][HEIGHT], pos robot, u8 dir){
   }
 }
 
+//Counts the given type of environment around the robot.
 u8 count_env(u8 maze[WIDTH][HEIGHT], pos robot, u8 type){
   u8 i;
   int c = 0;
@@ -210,7 +223,7 @@ u8 count_env(u8 maze[WIDTH][HEIGHT], pos robot, u8 type){
   return c;
 }
 
-
+// How the robot should behave in a deadend
 u8 deadend(u8 maze[WIDTH][HEIGHT], pos robot){
   u8 i;
   for(i = UP; i <= LEFT; i++){
@@ -221,6 +234,7 @@ u8 deadend(u8 maze[WIDTH][HEIGHT], pos robot){
   return -1;
 }
 
+//What the robot does in a dead end
 u8 corridor(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading){
   if(look(maze, robot, current_heading) != WALL){
     return current_heading;
@@ -232,18 +246,19 @@ u8 corridor(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading){
     return (current_heading+3)%4;
   }
 }
-
+// Pop a value off a stack
 u8 pop(u8 stack[], u16 *stack_top){
   (*stack_top)--;
   return stack[*stack_top];
 }
 
+// Push a value onto a stack
 void push(u8 val, u8 stack[], u16 *stack_top){
   stack[*stack_top] = val;
   (*stack_top)++;
 }
 
-
+//What we do at a junction
 u8 junction(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], u16 *exp_st_top,
             u8 current_heading){
 
@@ -262,6 +277,7 @@ u8 junction(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], u16 *exp_st_t
   return (pop(explore_stack, exp_st_top)+2)%4;
 }
 
+//Handles where we need to go next
 u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[], 
                    u16 *exp_st_top, u8 current_heading){
   u8 dir;
@@ -280,6 +296,7 @@ u8 explore_control(u8 maze[WIDTH][HEIGHT], pos robot, u8 explore_stack[],
   }
 }
 
+//A different type of movement when backtracking our solve 
 pos solved_move(u8 maze[WIDTH][HEIGHT], u8 dir, pos robot){
   maze[robot.x][robot.y] = SOLVED_BACKTRACK;
   pos new = {robot.x, robot.y};
@@ -304,13 +321,15 @@ pos solved_move(u8 maze[WIDTH][HEIGHT], u8 dir, pos robot){
       break;
   }
 }
-u8 solved = 0;
+
 u8 explore_stack[3000];
 
+//Handles our backtrack to the start
 u8 control_backtrack(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading, u16 *exp_st_top){
   u8 been_before = count_env(maze, robot, BEEN_BEFORE);
   u8 exits = 4 - count_env(maze, robot, WALL);
   u8 dir = UP;
+  //If we are at the final tile, find the only available tile to start our path
   if(robot.x == WIDTH-3 && robot.y == HEIGHT-3){
     u8 i;
     for(i = UP; i <= LEFT; i++){
@@ -318,7 +337,9 @@ u8 control_backtrack(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading, u16 
         return i;
     }
   }
+  //Then handle corridors and junctions appropriately
   else if (exits == 2){
+    //Same as the previous corridor handling
     if(look(maze, robot, current_heading) != WALL){
       return current_heading;
     }
@@ -330,27 +351,32 @@ u8 control_backtrack(u8 maze[WIDTH][HEIGHT], pos robot, u8 current_heading, u16 
     }
   }
   else{
+    //We want the reverse direction of the stack when tracing our route
     return (pop(explore_stack, exp_st_top)+2)%4;
   }
 }
 
-
+//Handles our route tracing
 void trace_root(u8 maze[WIDTH][HEIGHT], u16 *exp_st_top) {
   pos robot = {WIDTH-3, HEIGHT-3};
   u8 current_heading = UP;
-
+  //Keep going until we reach the start
   while(robot.x != 1 || robot.y != 1){
+    //Find our direction
     u8 direction = control_backtrack(maze, robot, current_heading, exp_st_top);
 
     current_heading = direction;
+    //Move in our selected direction
     robot = solved_move(maze, direction, robot);
 
+    //Draw the maze out
     draw_maze(maze);
-    sleep(sleep_time/9);
+    sleep(sleep_time/5);
   }
 
 }
 
+//Solves the maze and traces the root
 void solve_maze(u8 maze[WIDTH][HEIGHT]) {
   u16 exp_st_top = 0;
 
@@ -370,8 +396,8 @@ void solve_maze(u8 maze[WIDTH][HEIGHT]) {
     sleep(sleep_time/9);
   }
   draw_maze(maze);
-  sleep(1000);
-  solved = 1;
+  sleep(10000);
   trace_root(maze, &exp_st_top);
   draw_maze(maze);
+  sleep(10000);
 }

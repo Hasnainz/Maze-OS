@@ -1,8 +1,8 @@
 print:
     pusha
 
-; keep this in mind:
-; while (string[i] != 0) { print string[i]; i++ }
+; We are essentially running the below c code
+; while (string[i++] != 0) { printf("%c", string[i]); }
 
 ; the comparison for string end (null byte)
 start:

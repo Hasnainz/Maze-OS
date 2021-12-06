@@ -2,10 +2,8 @@
 #include "../cpu/timer.h"
 #include "../cpu/types.h"
 
-//TODO: Switch to using an actual random number generator
-
 //The below link is a paper written by Keio Uni, department of mathematics
-//that describes a method of generating random numbers called the 
+//that contains a method of generating random numbers called the 
 //mersenne twister. (It is based on mersenne primes 2^p-1) 
 //http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/ARTICLES/mt.pdf
 
@@ -40,7 +38,7 @@ double genrand(){
 
   if (mti >= N){
     int k;
-
+    //If no seed is selected, use this seed
     if(mti == N + 1){
       sgenrand(4367);
     }
@@ -67,8 +65,7 @@ double genrand(){
   return y;
 }
 
-
-//Temporary random number generator
+//This is what the maze interacts with to get a random number in the wanted range
 int rand_int(int range){
   return (u32)(genrand()) % range;
 }

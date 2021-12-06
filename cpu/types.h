@@ -2,7 +2,9 @@
 #define TYPES_H
 
 
-// Shortens our code and makes it more readable
+//Just shortening phrases so that we can use appropriate sized types 
+//in order to save memory because I am programming everything on the stack
+
 typedef unsigned int   u32;
 typedef          int   s32;
 typedef unsigned short u16;

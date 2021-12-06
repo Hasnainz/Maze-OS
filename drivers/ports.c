@@ -1,22 +1,15 @@
 #include "ports.h"
 
-/**
- * Read a byte from the specified port
- */
+// Read a byte from a specified port
 u8 port_byte_in (u16 port) {
     u8 result;
-    /* Inline assembler syntax
-     * !! Notice how the source and destination registers are switched from NASM !!
-     *
-     * '"=a" (result)'; set '=' the C variable '(result)' to the value of register e'a'x
-     * '"d" (port)': map the C variable '(port)' into e'd'x register
-     *
-     * Inputs and outputs are separated by colons
-     */
+
+    // Inline assembler, this is slightly different from nasm
     __asm__("in %%dx, %%al" : "=a" (result) : "d" (port));
     return result;
 }
 
+// Send a byte out of a port
 void port_byte_out (u16 port, u8 data) {
     /* Notice how here both registers are mapped to C variables and
      * nothing is returned, thus, no equals '=' in the asm syntax 
@@ -26,12 +19,14 @@ void port_byte_out (u16 port, u8 data) {
     __asm__ __volatile__("out %%al, %%dx" : : "a" (data), "d" (port));
 }
 
+//Read a word from a specified port
 u16 port_word_in (u16 port) {
     u16 result;
     __asm__("in %%dx, %%ax" : "=a" (result) : "d" (port));
     return result;
 }
 
+// Send a word our of a port
 void port_word_out (u16 port, u16 data) {
     __asm__ __volatile__("out %%ax, %%dx" : : "a" (data), "d" (port));
 }

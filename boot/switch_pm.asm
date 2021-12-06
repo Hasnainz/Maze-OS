@@ -1,3 +1,5 @@
+; How we switch to 32 bit protected mode, 1-7 instructions are on the os-PDF
+
 [bits 16]
 switch_to_pm:
     cli ; 1. disable interrupts
