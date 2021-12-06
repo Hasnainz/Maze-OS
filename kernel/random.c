@@ -26,6 +26,8 @@ static u32 mt[N];
 static u16 mti = N + 1;
 
 void sgenrand(u32 seed){
+  if(seed == 0)
+    ++seed;
   seed = seed << 24;
   mt[0] = seed & 0xffffffff;
   for(mti = 1; mti < N; mti++)
@@ -40,7 +42,7 @@ double genrand(){
     int k;
     //If no seed is selected, use this seed
     if(mti == N + 1){
-      sgenrand(4367);
+      sgenrand(get_ticks());
     }
 
     for (k = 0; k < N-M; k++){
